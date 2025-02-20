@@ -1,17 +1,14 @@
 #include <iostream>
 #include <riscv_vector.h>
 
-void transpose(float dst[4][4], float src[4][4], size_t n) 
+void vector_transpose(float dst[4][4], float src[4][4], size_t n) 
 {
-    for (size_t i = 0; i < n; ++i) { 
-        
+    for(size_t i = 0; i < n; i++){ 
         size_t avl = n;
-      
         float* row_src = &src[i][0];
-       
         float* row_dst = &dst[0][i];
 
-        while (avl > 0) {
+        while(avl > 0) {
             size_t vl = __riscv_vsetvl_e32m1(avl);
             vfloat32m1_t row = __riscv_vle32_v_f32m1(row_src, vl);
             __riscv_vsse32(row_dst, sizeof(float) * n, row, vl);
@@ -19,6 +16,14 @@ void transpose(float dst[4][4], float src[4][4], size_t n)
             avl -= vl;
             row_src += vl;
             row_dst += vl * n;
+        }
+    }
+}
+void naive_transpose(float dst[4][4], float src[4][4], size_t n)
+{
+    for (size_t i = 0; i < n; i++){
+        for (size_t j = 0; j < n; j++){
+            dst[j][i] = src[i][j];
         }
     }
 }
@@ -47,7 +52,8 @@ int main() {
     std::cout << "Original Matrix:" << std::endl;
     print(a, n);
 
-    transpose(result, a, n);
+    naive_transpose(result, a, n);
+    vector_transpose(result, a, n);
 
     std::cout << "\nTransposed Matrix:" << std::endl;
     print(result, n);
