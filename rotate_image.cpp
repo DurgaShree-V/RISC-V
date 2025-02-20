@@ -1,6 +1,29 @@
-//Vector approach - rotate by 90 degrees
 #include <iostream>
 #include <riscv_vector.h>
+
+void transpose(float *res, float *A, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            res[j * n + i] = A[i * n + j];
+        }
+    }
+}
+
+void reverse(float *res, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n / 2; j++) {
+            float t = res[i * n + j];
+            res[i * n + j] = res[i * n + (n - j - 1)];
+            res[i * n + (n - j - 1)] = t;
+        }
+    }
+}
+
+
+void naive_rotate(float *a, float *result, int n) {
+    transpose(result, a, n);
+    reverse(result, n);
+}
 
 void print(float *matrix, size_t n) {
     for (size_t i = 0; i < n; ++i) {
@@ -11,7 +34,7 @@ void print(float *matrix, size_t n) {
     }
 }
 
-void rotate(float *src, float *dst, size_t n) 
+void vector_rotate(float *src, float *dst, size_t n) 
 {
     for (int i = n - 1,j= 0; i >= 0; i--,j++) {  
         
@@ -32,7 +55,7 @@ void rotate(float *src, float *dst, size_t n)
 }
 
 int main() {
-    size_t n;
+    size_t n = 1000;
     float count = 1.0;
     
     std::cout << "Enter the value of n in nxn: ";
@@ -50,7 +73,19 @@ int main() {
     std::cout << "Original Matrix:" << std::endl;
     print(&a[0][0], n);
 
-    rotate(&a[0][0], &result[0][0], n);
+    for(int i=0; i<100; i++)
+    {
+        naive_rotate(&a[0][0], &result[0][0], n);   
+    }
+
+    for(int i=0; i<100; i++)
+    {
+        vector_rotate(&a[0][0], &result[0][0], n);   
+    }
+
+    naive_rotate(&a[0][0], &result[0][0], n);
+
+    vector_rotate(&a[0][0], &result[0][0], n);
 
     std::cout << "\nOutput Matrix:" << std::endl;
     print(&result[0][0], n);
