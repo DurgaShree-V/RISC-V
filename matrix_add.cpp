@@ -1,18 +1,18 @@
 #include <riscv_vector.h>
 #include <iostream>
 #include <cstddef>
+#include <chrono>
 
 using namespace std;
 
-void vector_add(const int A[2][10], const int B[2][10], int C[2][10], const int row, const int col)
+void vector_add(int **A, int **B, int **C, int n)
 {
     size_t vl;
-    for (size_t i = 0; i < row; i++)
+    for (size_t i = 0; i < n; i++)
     {
-        for (size_t j = 0; j < col; j += vl)
+        for (size_t j = 0; j < n; j += vl)
         {
-            vl = __riscv_vsetvl_e32m2(col - j); 
-            cout << "value of vl = " << vl << endl;
+            vl = __riscv_vsetvl_e32m2(n - j); 
 
             vint32m2_t va = __riscv_vle32_v_i32m2(&A[i][j], vl);
             vint32m2_t vb = __riscv_vle32_v_i32m2(&B[i][j], vl);
@@ -24,21 +24,76 @@ void vector_add(const int A[2][10], const int B[2][10], int C[2][10], const int 
     }
 }
 
+void naive_add(int **A, int **B, int **C, int n)
+{
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0; j<n; j++)
+        {
+            C[i][j] = A[i][j] + B[i][j];
+        }
+    }
+}
+
+void print(int **matrix,int n)
+{
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0; j<n; j++)
+        {
+            cout << matrix[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
 int main()
 {
-    const int row = 2, col = 10;
-    int A[row][col] = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
-    int B[row][col] = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
-    int C[row][col] = {0};
+    int n = 16;
+    int **a = new int*[n];
+    int **b = new int*[n];
+    int **result = new int*[n];
 
-    vector_add(A, B, C, row, col);
+    for (int i = 0; i < n; i++) {
+        a[i] = new int[n];
+        b[i] = new int[n];
+        result[i] = new int[n];
+    }
 
-    cout << "Resultant Matrix:" << endl;
-    for (int i = 0; i < row; i++)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            a[i][j] = j + 1;
+            b[i][j] = j + 1;
+        }
+        cout << endl;
+    }
+
+    cout << "The elements of Matrix A:" << endl;
+    print(a, n);
+
+    cout << "The elements of Matrix B:" << endl;
+    print(b, n);
+
+    for(int i=0;i<100;i++){
+        naive_add(a, b, result, n);    //warmup runs
+    }
+
+    for(int i=0;i<100;i++){
+        vector_add(a, b, result, n);    //warmup runs
+    }
+
+    naive_add(a, b, result, n);    
+    cout << "Resultant Matrix using scalar:" << endl;
+    print(result, n);
+
+    vector_add(a, b, result, n);
+
+    cout << "Resultant Matrix using vector:" << endl;
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < col; j++)
+        for (int j = 0; j < n; j++)
         {
-            cout << C[i][j] << " "; 
+            cout << result[i][j] << " "; 
         }
         cout << endl;
     }
