@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void multiply_A_and_B(int **a, int **b, int **result, int n) {
+void vector_multiply(int **a, int **b, int **result, int n) {
     for (size_t i = 0; i < n; i++) {  
         for (size_t j = 0; j < n; j ++) {  
             size_t vl = __riscv_vsetvl_e32m2(n - j);  
@@ -20,9 +20,32 @@ void multiply_A_and_B(int **a, int **b, int **result, int n) {
     }
 }
 
+void naive_multiply(int **a, int **b, int **result, int n)
+{
+    for(int i=0; i<n; i++)
+    {
+        for(int j=0; j<n; j++)
+        {
+            result[i][j] = 0;
+            for(int k=0; k<n; k++)
+            {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+}
+
+void print(int **matrix, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        for (size_t j = 0; j < n; j++) {
+            std::cout << matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 int main() {
-    int n = 16;
+    int n = 8;
     int **a = new int*[n];
     int **b = new int*[n];
     int **result = new int*[n];
@@ -33,32 +56,32 @@ int main() {
         result[i] = new int[n];
     }
 
-    cout << "The elements of Matrix A:" << endl;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             a[i][j] = j + 1;
-            cout << a[i][j] << " ";
+            b[i][j] = j + 1;
         }
-        cout << endl;
     }
+    cout << "The elements of Matrix A:" << endl;
+    print(a, n);
 
     cout << "The elements of Matrix B:" << endl;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            b[i][j] = j + 1; 
-            cout << b[i][j] << " ";
-        }
-        cout << endl;
+    print(b, n);
+    
+    for(int i=0;i<100;i++){
+        naive_multiply(a, b, result, n);    //warmup runs
     }
 
-    multiply_A_and_B(a, b, result, n);
+    for(int i=0;i<100;i++){
+        vector_multiply(a, b, result, n);    //warmup runs
+    }
+
+    naive_multiply(a, b, result, n);
+
+    vector_multiply(a, b, result, n);
 
     cout << "Output Matrix:" << endl;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++)
-            cout << result[i][j] << " ";
-        cout << endl;
-    }
+    print(result, n);
 
     for (int i = 0; i < n; i++) {
         delete[] a[i];
