@@ -87,15 +87,7 @@ int main()
     print(result, n);
 
     vector_add(a, b, result, n);
-
     cout << "Resultant Matrix using vector:" << endl;
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            cout << result[i][j] << " "; 
-        }
-        cout << endl;
-    }
+    print(result, n);
     return 0;
 }
